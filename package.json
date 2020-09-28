@@ -1,12 +1,12 @@
 {
-  "name": "MyFinanceServer",
+  "name": "myfinance_server",
   "version": "1.0.0",
   "description": "The backend for the MyFinance App",
   "main": "src/index.ts",
   "repository": "https://github.com/fingeg/MyFinanceServer",
   "author": "fingeg",
   "license": "MIT",
-  "private": false
+  "private": false,
   "engineStrict": true,
   "engines": {
     "node": ">=10.16"
@@ -20,7 +20,7 @@
     "cors": "^2.8.5",
     "express": "^4.17.1",
     "mysql": "^2.17.1",
-    "sqlstring": "^2.3.1",
+    "sqlstring": "^2.3.1"
   },
   "devDependencies": {
     "@types/cors": "^2.8.6",

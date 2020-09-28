@@ -1,0 +1,8 @@
+{
+  "port": "PORT",
+  "dbHost": "HOST_URL",
+  "dbName": "DATABASE",
+  "dbUser": "USERNAME",
+  "dbPassword": "PASSWORD",
+  "dbPort": 3306
+}
