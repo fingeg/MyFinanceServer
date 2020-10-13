@@ -112,11 +112,13 @@ export const getDbResults = async (options: string): Promise<any[]> => {
 const createDefaultTables = (): void => {
     if (!checkDatabaseStatus()) return;
     dbConnection.query(
-        'CREATE TABLE IF NOT EXISTS users (username VARCHAR(10) NOT NULL, password VARCHAR(64) NOT NULL, UNIQUE KEY unique_username (username)) ENGINE = InnoDB DEFAULT CHARSET=utf8;');
+        'CREATE TABLE IF NOT EXISTS users (username VARCHAR(10) NOT NULL, salt TEXT NOT NULL, verifier TEXT NOT NULL, UNIQUE KEY unique_username (username)) ENGINE = InnoDB DEFAULT CHARSET=utf8;');
+    dbConnection.query(
+        'CREATE TABLE IF NOT EXISTS logins (username VARCHAR(10) NOT NULL, id int NOT NULL AUTO_INCREMENT, server_ephemeral TEXT NOT NULL, client_ephemeral TEXT NOT NULL, session_proof TEXT, UNIQUE KEY unique_id (id)) ENGINE = InnoDB DEFAULT CHARSET=utf8;');
     dbConnection.query(
         'CREATE TABLE IF NOT EXISTS categories (id int NOT NULL AUTO_INCREMENT, name TEXT NOT NULL, descirption TEXT NOT NULL, is_split BOOLEAN, UNIQUE KEY unique_id (id)) ENGINE = InnoDB DEFAULT CHARSET=utf8;');
-
 };
+
 /** Checks if the database connection is already initialized */
 const checkDatabaseStatus = (): boolean => {
     if (!dbConnection || (dbConnection.state != 'authenticated' && dbConnection.state != 'connected')) {

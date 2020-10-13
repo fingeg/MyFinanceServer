@@ -3,8 +3,9 @@
 export interface User {
     username: string;
 
-    /** In some cases (Only for authentication) the hashed password is added to the user */
-    password: string | undefined;
+    /** Only for authentication: */
+    salt: string | undefined;
+    verifier: string | undefined;
 }
 
 /** One finance category **/
@@ -38,4 +39,12 @@ export interface Split {
 
     /** Only for the database, not in request */
     categoryID: number | undefined;
+}
+
+export interface Login {
+    username: string;
+    id: number | undefined;
+    serverEphemeral: string;
+    clientEphemeral: string;
+    sessionProof: string | undefined;
 }

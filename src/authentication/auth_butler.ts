@@ -1,16 +1,19 @@
 
 // Extend the default request
 import express, {Request} from "express";
-import {getUser, rmvUser, setUser} from "./auth_db";
-import crypto from "crypto";
+import {getLogin, getUser, rmvLogin, rmvUser, rmvUserLogins, setLogin, setUser} from "./auth_db";
 import {User} from "../utils/interfaces";
 import bodyParser from "body-parser";
+import {generateEphemeral, deriveSession} from 'secure-remote-password/server';
 
 declare global {
     namespace Express {
         export interface Request {
             user: {
-                username: string
+                username: string,
+                salt: string,
+                verifier: string,
+                sessionID: number,
             }
         }
     }
@@ -22,29 +25,22 @@ userRouter.use(bodyParser.json());
 /**
  * Register a user.
  *
- * The default http auth is used for the registration process (error 400).
- *
- * The password has to be at least 5 characters long (error 406).
+ * The body has to contain the username, a salt and a verifier (SRP protocol) (Error 400)
  *
  * The username has to be new (error 409).
  * */
 userRouter.put('/', async (req, res) => {
-    const auth = getAuth(req);
+
     const user: User = {
-        username: auth.username,
-        password: auth.password,
+        username: req.body.username,
+        salt: req.body.salt,
+        verifier: req.body.verifier,
     };
 
     // Check if the parameters are set
-    if (!user.username || !user.password) {
+    if (!user.username || !user.salt || !user.verifier) {
         res.status(400);
         return res.json({status: false});
-    }
-
-    // Check if password meets the requirements
-    if (user.password.length < 5) {
-        res.status(406); //406: HTTP-Not acceptable
-        res.json({status: false});
     }
 
     // Check if the username already exists
@@ -54,9 +50,6 @@ userRouter.put('/', async (req, res) => {
         return res.json({status: false});
     }
 
-    // Hash the user password
-    user.password = crypto.createHash('sha1').update(user.password).digest('hex');
-
     // Save the user
     setUser(user);
     return res.json({status: true});
@@ -65,24 +58,22 @@ userRouter.put('/', async (req, res) => {
 /**
  * Change the user password.
  *
- * Put the newPassword attribute in the body (error 400)
+ * The body has to contain the salt and the verifier (SRP-Protocol) (Error 400)
  *
  * The password has to be at least 5 characters long (error 406).
  * */
 userRouter.post('/', async (req, res) => {
     await addUserInfo(req, res, async () => {
-        const newPassword: string = req.body.newPassword;
+        const user: User = {
+            username: req.user.username,
+            salt: req.body.salt,
+            verifier: req.body.verifier,
+        };
 
-        // Check if the new passwort is set
-        if (!newPassword) {
+        // Check if the parameters are set
+        if (!user.salt || !user.verifier) {
             res.status(400);
             return res.json({status: false});
-        }
-
-        // Check if password meets the requirements
-        if (newPassword.length < 5) {
-            res.status(406); //406: HTTP-Not acceptable
-            res.json({status: false});
         }
 
         // Check if the username exists
@@ -92,14 +83,12 @@ userRouter.post('/', async (req, res) => {
             return res.json({status: false});
         }
 
-        // Hash the user password
-        const hashedPassword = crypto.createHash('sha1').update(newPassword).digest('hex');
-
         // Save the user
-        setUser({
-            username: req.user.username,
-            password: hashedPassword,
-        });
+        setUser(user);
+
+        // Delete current sessions (All sessions get invalid with the new password)
+        rmvUserLogins(user.username);
+
         return res.json({status: true});
     });
 });
@@ -108,18 +97,112 @@ userRouter.post('/', async (req, res) => {
 userRouter.delete('/', async (req, res) => {
     await addUserInfo(req, res, () => {
         rmvUser(req.user.username);
+        rmvUserLogins(req.user.username);
         return res.json({status: true});
     });
 });
 
-const getAuth = (req: any): { username: string, password: string } => {
+/**
+ * The login process every device has to do for the first connection to get a valid session key
+ *
+ * The request has to be done twice for one successful login (SRP-Protocol)
+ *
+ * The first request:
+ *  - body has to contain username and the client ephemeral
+ *  - gets the salt, the server ephemeral and the login id
+ *
+ * The second request:
+ *  - body has to contain the client session key proof, the login id and the username
+ *  - gets the server session key proof and the login status
+ */
+userRouter.post('/login', async (req, res) => {
+    const loginID: number = req.body.id;
+    const username: string = req.body.username;
+
+    // If this is the first of two requests
+    if (!loginID) {
+        const clientEphemeral: string = req.body.ephemeral;
+
+        // Check if the parameters are set
+        if (!username || !clientEphemeral) {
+            res.status(400);
+            return res.json({status: false});
+        }
+
+        const user = await getUser(username);
+        if (!user || !user.verifier) {
+            res.status(409); //409: HTTP-Conflict
+            return res.json({status: false});
+        }
+
+        const serverEphemeral = generateEphemeral(user.verifier);
+
+        // Save the session
+        const id = await setLogin({
+            username: username,
+            id: undefined,
+            serverEphemeral: serverEphemeral.secret,
+            clientEphemeral: clientEphemeral,
+            sessionProof: undefined,
+        });
+
+        return res.json({status: true, loginID: id, serverEphemeral: serverEphemeral.public, salt: user.salt});
+    }
+
+    // If this is already the second one
+    else {
+        const sessionProof = req.body.sessionProof;
+
+        // Check if the parameters are set
+        if (!username || !sessionProof) {
+            res.status(400);
+            return res.json({status: false});
+        }
+
+        const user = await getUser(username);
+        const loginSession = await getLogin(loginID);
+
+        if (!user || !user.salt || !user.verifier || !loginSession) {
+            res.status(409); //409: HTTP-Conflict
+            return res.json({status: false});
+        }
+
+        try {
+            const serverSession = deriveSession(
+                loginSession.serverEphemeral,
+                loginSession.clientEphemeral,
+                user.salt,
+                user.username,
+                user.verifier,
+                sessionProof
+            );
+
+            loginSession.sessionProof = sessionProof;
+            await setLogin(loginSession);
+
+            return res.json({status: true, loginID: loginID, sessionProof: serverSession.proof});
+        } catch (e) {
+            console.log(`Login failed: ${e}`)
+
+            // Delete failed login attempt from the database
+            if (!loginSession.sessionProof && loginSession.id) {
+                rmvLogin(loginSession.id);
+            }
+
+            res.status(401);
+            return res.json({status: false});
+        }
+    }
+});
+
+const getAuth = (req: any): { username: string, sessionProof: string, sessionID: number } => {
     if (req.headers.authorization) {
         const base64Credentials = req.headers.authorization.split(' ')[1];
         const credentials = Buffer.from(base64Credentials, 'base64').toString('ascii');
-        const [username, password] = credentials.split(':');
-        return {username: username, password: password};
+        const [username, sessionProof] = credentials.split(':');
+        return {username: username, sessionProof: sessionProof, sessionID: parseInt(req.headers.session_id)};
     } else {
-        return {username: '', password: ''};
+        return {username: '', sessionProof: '', sessionID: 0};
     }
 };
 
@@ -139,20 +222,35 @@ export async function addUserInfo(req: Request, res: any, next: () => any) {
     // Get the given and stored login data
     const auth = getAuth(req);
     const user = await getUser(auth.username);
-    const hashedPassword = crypto.createHash('sha1').update(auth.password).digest('hex');
+    const login = await getLogin(auth.sessionID);
 
     // If everything checks out, add the login data to the request
-    if (user && hashedPassword == user.password) {
+    if (user && login && user.salt && user.verifier) {
+        try {
+            deriveSession(
+                login.serverEphemeral,
+                login.clientEphemeral,
+                user.salt,
+                user.username,
+                user.verifier,
+                auth.sessionProof
+            );
 
-        req.user = {
-            username: auth.username,
+            req.user = {
+                username: auth.username,
+                salt: user.verifier,
+                verifier: user.verifier,
+                sessionID: auth.sessionID,
+            }
+
+            next();
+        } catch (e) {
+            console.log(`Auth failed: ${e}`);
+            res.status(401);
+            res.json({error: 'unauthorized'});
         }
-
-        next();
     } else {
         res.status(401);
-        const challengeString = 'Basic';
-        res.set('WWW-Authenticate', challengeString);
         res.json({error: 'unauthorized'});
     }
 }
