@@ -16,13 +16,13 @@ export const getCategory = async (id: number): Promise<Category | undefined> => 
 };
 
 /** Updates or adds a new category */
-export const addCategory = async (category: Category): Promise<any[]> => {
+export const addCategory = async (category: Category): Promise<number> => {
     const result: any = await getDbResults(`INSERT INTO categories VALUES (NULL, ${toSqlValue(category.name)}, ${toSqlValue(category.description)}, ${category.isSplit});`);
     return result.insertId;
 };
 
 /** Updates or adds a new category */
-export const updateCategory = async (category: Category): Promise<any[]> => {
+export const updateCategory = async (category: Category): Promise<number> => {
     const updateAttr = {
         name: category.name,
         description: category.description,

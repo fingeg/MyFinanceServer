@@ -24,6 +24,20 @@ export interface Category {
     splits: Split[] | undefined;
 }
 
+/** A permission specific for one user and category */
+export interface Permission {
+    categoryID: number;
+    username: string;
+    /** The level of permission:
+     * 0: Read-only,
+     * 1: Read/Write,
+     * 2: Owner
+     * */
+    permission: number;
+    /** The base64 encoded and with the users public key encrypted category key to de- and encrypt the category data */
+    encryptionKey: string;
+}
+
 export interface Payment {
     name: string;
     id: number;

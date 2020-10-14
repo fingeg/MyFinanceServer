@@ -5,6 +5,7 @@ import {getLogin, getUser, rmvLogin, rmvUser, rmvUserLogins, setLogin, setUser} 
 import {User} from "../utils/interfaces";
 import bodyParser from "body-parser";
 import {generateEphemeral, deriveSession} from 'secure-remote-password/server';
+import {rmvUserPermissions} from "../permissions/permissions_db";
 
 declare global {
     namespace Express {
@@ -104,6 +105,7 @@ userRouter.delete('/', async (req, res) => {
     await addUserInfo(req, res, () => {
         rmvUser(req.user.username);
         rmvUserLogins(req.user.username);
+        rmvUserPermissions(req.user.username);
         return res.json({status: true});
     });
 });
