@@ -14,6 +14,8 @@ declare global {
                 salt: string,
                 verifier: string,
                 sessionID: number,
+                privateKey: string,
+                publicKey: string,
             }
         }
     }
@@ -25,7 +27,7 @@ userRouter.use(bodyParser.json());
 /**
  * Register a user.
  *
- * The body has to contain the username, a salt and a verifier (SRP protocol) (Error 400)
+ * The body has to contain the username, a salt, a verifier (SRP protocol) and the private/public rsa keys  (Error 400)
  *
  * The username has to be new (error 409).
  * */
@@ -35,6 +37,8 @@ userRouter.put('/', async (req, res) => {
         username: req.body.username,
         salt: req.body.salt,
         verifier: req.body.verifier,
+        privateKey: req.body.privateKey,
+        publicKey: req.body.publicKey,
     };
 
     // Check if the parameters are set
@@ -68,6 +72,8 @@ userRouter.post('/', async (req, res) => {
             username: req.user.username,
             salt: req.body.salt,
             verifier: req.body.verifier,
+            privateKey: req.user.privateKey,
+            publicKey: req.user.publicKey,
         };
 
         // Check if the parameters are set
@@ -113,7 +119,7 @@ userRouter.delete('/', async (req, res) => {
  *
  * The second request:
  *  - body has to contain the client session key proof, the login id and the username
- *  - gets the server session key proof and the login status
+ *  - gets the server session key proof, the login status and the rsa private/public key
  */
 userRouter.post('/login', async (req, res) => {
     const loginID: number = req.body.id;
@@ -180,7 +186,13 @@ userRouter.post('/login', async (req, res) => {
             loginSession.sessionProof = sessionProof;
             await setLogin(loginSession);
 
-            return res.json({status: true, loginID: loginID, sessionProof: serverSession.proof});
+            return res.json({
+                status: true,
+                loginID: loginID,
+                sessionProof: serverSession.proof,
+                publicKey: user.publicKey,
+                privateKey: user.privateKey,
+            });
         } catch (e) {
             console.log(`Login failed: ${e}`)
 
@@ -241,6 +253,8 @@ export async function addUserInfo(req: Request, res: any, next: () => any) {
                 salt: user.verifier,
                 verifier: user.verifier,
                 sessionID: auth.sessionID,
+                privateKey: user.privateKey,
+                publicKey: user.publicKey,
             }
 
             next();

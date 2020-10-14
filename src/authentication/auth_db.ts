@@ -9,6 +9,8 @@ export const getUser = async (username: string): Promise<User | undefined> => {
         username: username,
         salt: dbUser.salt,
         verifier: dbUser.verifier,
+        publicKey: dbUser.public_key,
+        privateKey: dbUser.private_key,
     };
 };
 
@@ -19,7 +21,7 @@ export const setUser = (user: User): void => {
         verifier: user.verifier,
     };
     const updateStr = updateOnlyNonNullAttributes(updateAttr);
-    runDbCmd(`INSERT INTO users VALUES (${toSqlValue(user.username)}, ${toSqlValue(user.salt)}, ${toSqlValue(user.verifier)}) ${updateStr};`);
+    runDbCmd(`INSERT INTO users VALUES (${toSqlValue(user.username)}, ${toSqlValue(user.salt)}, ${toSqlValue(user.verifier)}, ${toSqlValue(user.publicKey)}, ${toSqlValue(user.privateKey)}) ${updateStr};`);
 };
 
 /** Removes a user with the given username */

@@ -6,6 +6,10 @@ export interface User {
     /** Only for authentication: */
     salt: string | undefined;
     verifier: string | undefined;
+
+    /** Only for de- and encryption */
+    privateKey: string; // Encrypted version (Only the client can decrypt it)
+    publicKey: string; // Unencrypted version (Everyone can use it to encrypt category keys)
 }
 
 /** One finance category **/
