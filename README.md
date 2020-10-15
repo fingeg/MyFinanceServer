@@ -1,8 +1,8 @@
 # MyFinanceServer
-MyFinance is a app to manage the fincance for multiple projects or activities at the same time.
+MyFinance is an app to manage the fincance for multiple projects or activities at the same time.
 
 ## Aim of the project
-To be able to manage the finances of multiple activies or projects and send the bills of the results of parts of it to specific people.
+To be able to manage the finances of multiple activies or projects and send the bills of the results or of parts of it to specific people.
 
 ### Example
 If you are the one who is paying everything in a project with for example two people, 
