@@ -47,6 +47,7 @@ export interface Payment {
     date: string;
     /** The username of the one who payed the price */
     payer: string;
+    categoryID: number;
 }
 
 export interface Split {

@@ -3,6 +3,7 @@ import bodyParser from "body-parser";
 import {Category} from "../utils/interfaces";
 import {addCategory, getCategory, rmvCategory, updateCategory} from "./categories_db";
 import {getPermission, rmvCategoryPermissions, setPermission} from "../permissions/permissions_db";
+import {rmvCategoryPayments} from "../payments/payments_db";
 
 export const categoryRouter = express.Router();
 categoryRouter.use(bodyParser.json());
@@ -112,9 +113,10 @@ categoryRouter.delete('/', async (req, res) => {
         return res.json({status: false, error: 'The user has to be the owner of the category'});
     }
 
-    // Remove the category and all related permission
+    // Remove the category and all related entries
     await rmvCategory(category.id);
     rmvCategoryPermissions(category.id);
+    rmvCategoryPayments(category.id);
 
     return res.json({status: true});
 });
