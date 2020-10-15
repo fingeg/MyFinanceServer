@@ -1,9 +1,10 @@
 import express from "express";
 import bodyParser from "body-parser";
 import {Permission} from "../utils/interfaces";
-import {getCategory} from "../categories/categories_db";
-import {getPermission, rmvPermission, setPermission} from "./permissions_db";
+import {getCategory, rmvCategory} from "../categories/categories_db";
+import {getCategoryPermissions, getPermission, rmvPermission, setPermission} from "./permissions_db";
 import {getUser} from "../authentication/auth_db";
+import {rmvCategoryPayments} from "../payments/payments_db";
 
 export const permissionRouter = express.Router();
 permissionRouter.use(bodyParser.json());
@@ -37,9 +38,14 @@ permissionRouter.post('/', async (req, res) => {
     }
 
     // Check if a valid permission is chosen
-    if (![0,1].includes(permission.permission)) {
+    if (![0, 1].includes(permission.permission)) {
         res.status(409);
         return res.json({status: false, error: 'Only 0 (read-only) or 1 (read/write) permissions are allowed'})
+    }
+
+    if (req.user.username == permission.username) {
+        res.status(409);
+        return res.json({status: false, error: 'You cannot remove your owner permissions'})
     }
 
     // Check if the given user exists
@@ -74,6 +80,14 @@ permissionRouter.delete('/', async (req, res) => {
     if (!ownerPermission || ownerPermission.permission != 2) {
         res.status(403);
         return res.json({status: false, error: 'User has to be the owner of the category'});
+    }
+
+    // If the permission to delete is the last one for a category, delete the category
+    const categoryPermission = await getCategoryPermissions(permission.categoryID);
+    if (categoryPermission.length == 1 && categoryPermission[0].username == permission.username) {
+        rmvCategory(permission.categoryID);
+        rmvCategoryPayments(permission.categoryID);
+        return res.json({status: true, info: 'You were the last user, category deleted'});
     }
 
     rmvPermission(permission.username, permission.categoryID);

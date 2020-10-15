@@ -1,5 +1,5 @@
 import {getDbResults, runDbCmd, toSqlValue, updateOnlyNonNullAttributes} from "../utils/database";
-import {Category, Permission, User} from "../utils/interfaces";
+import {Permission} from "../utils/interfaces";
 
 /** Returns the permission with the given username and category id **/
 export const getPermission = async (username: string, categoryID: number): Promise<Permission | undefined> => {
@@ -11,6 +11,19 @@ export const getPermission = async (username: string, categoryID: number): Promi
         permission: dbCategory.permission,
         encryptionKey: dbCategory.encryption_key,
     };
+};
+
+/** Returns the permission with the given username and category id **/
+export const getCategoryPermissions = async (categoryID: number): Promise<Permission[]> => {
+    const dbCategories = (await getDbResults(`SELECT * FROM permissions WHERE category_id=${categoryID};`));
+    return dbCategories.map((dbCategory) => {
+        return {
+            username: dbCategory.username,
+            categoryID: categoryID,
+            permission: dbCategory.permission,
+            encryptionKey: dbCategory.encryption_key,
+        };
+    });
 };
 
 /** Updates or adds a new permission */
