@@ -55,6 +55,8 @@ export interface Split {
     username: string;
     /** The share in percent (0 to 1) */
     share: number;
+    /** If the given user is also a MyFinance user */
+    isPlatformUser: boolean;
 
     /** Only for the database, not in request */
     categoryID: number | undefined;

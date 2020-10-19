@@ -87,6 +87,7 @@ permissionRouter.delete('/', async (req, res) => {
     if (categoryPermission.length == 1 && categoryPermission[0].username == permission.username) {
         rmvCategory(permission.categoryID);
         rmvCategoryPayments(permission.categoryID);
+        rmvPermission(permission.username, permission.categoryID);
         return res.json({status: true, info: 'You were the last user, category deleted'});
     }
 
