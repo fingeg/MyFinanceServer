@@ -17,7 +17,7 @@ paymentsRouter.post('/', async (req, res) => {
     const payment: Payment = req.body;
 
     // Check if the body is correct
-    if (!payment || !payment.categoryID || !payment.name || !payment.description || !payment.amount || !payment.date || !payment.payer) {
+    if (!payment || !payment.categoryID || !payment.name || !payment.description || !payment.amount || !payment.date || !payment.payer || !payment.payed) {
         res.status(400);
         return res.json({status: false});
     }

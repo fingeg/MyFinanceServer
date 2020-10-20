@@ -18,10 +18,17 @@ export interface Category {
     name: string;
     description: string;
     isSplit: boolean;
+}
 
-    /** Only for api request, not in the database */
-    payments: Payment[] | undefined;
+export interface CategoryOverview {
+    id: number;
+    name: string;
+    description: string;
+    isSplit: boolean;
+    payments: Payment[];
     splits: Split[] | undefined;
+    permission: number | undefined;
+    encryptionKey: string;
 }
 
 /** A permission specific for one user and category */
@@ -48,6 +55,7 @@ export interface Payment {
     /** The username of the one who payed the price */
     payer: string;
     categoryID: number;
+    payed: boolean;
 }
 
 export interface Split {

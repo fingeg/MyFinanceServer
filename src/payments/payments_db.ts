@@ -13,13 +13,13 @@ export const getPayment = async (id: number): Promise<Payment | undefined> => {
         payer: dbPayment.payer,
         date: dbPayment.date,
         categoryID: dbPayment.category_id,
+        payed: dbPayment.payed,
     };
 };
 
 /** Returns the payment with the given id **/
-export const getCategoryPayments = async (categoryID: number): Promise<Payment[] | undefined> => {
+export const getCategoryPayments = async (categoryID: number): Promise<Payment[]> => {
     const dbPayments = (await getDbResults(`SELECT * FROM payments WHERE category_id=${toSqlValue(categoryID)};`));
-    if (!dbPayments) return undefined;
 
     return dbPayments.map((dbPayment) => {
         return {
@@ -30,6 +30,7 @@ export const getCategoryPayments = async (categoryID: number): Promise<Payment[]
             payer: dbPayment.payer,
             date: dbPayment.date,
             categoryID: dbPayment.category_id,
+            payed: dbPayment.payed,
         };
     });
 };
@@ -42,9 +43,10 @@ export const setPayment = (payment: Payment) => {
         description: payment.description,
         date: payment.date,
         payer: payment.payer,
+        payed: payment.payed,
     };
     const updateStr = updateOnlyNonNullAttributes(updateAttr);
-    runDbCmd(`INSERT INTO payments VALUES (${toSqlValue(payment.id)}, ${toSqlValue(payment.categoryID)}, ${toSqlValue(payment.name)}, ${toSqlValue(payment.description)}, ${toSqlValue(payment.amount)}, ${toSqlValue(payment.date)}, ${toSqlValue(payment.payer)}) ${updateStr};`);
+    runDbCmd(`INSERT INTO payments VALUES (${toSqlValue(payment.id)}, ${toSqlValue(payment.categoryID)}, ${toSqlValue(payment.name)}, ${toSqlValue(payment.description)}, ${toSqlValue(payment.amount)}, ${toSqlValue(payment.date)}, ${toSqlValue(payment.payer)}, ${toSqlValue(payment.payed)}) ${updateStr};`);
 };
 
 /** Removes the payment with the given id */

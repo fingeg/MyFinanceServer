@@ -13,13 +13,26 @@ export const getPermission = async (username: string, categoryID: number): Promi
     };
 };
 
-/** Returns the permission with the given username and category id **/
+/** Returns the permissions with the given category id **/
 export const getCategoryPermissions = async (categoryID: number): Promise<Permission[]> => {
     const dbCategories = (await getDbResults(`SELECT * FROM permissions WHERE category_id=${categoryID};`));
     return dbCategories.map((dbCategory) => {
         return {
             username: dbCategory.username,
             categoryID: categoryID,
+            permission: dbCategory.permission,
+            encryptionKey: dbCategory.encryption_key,
+        };
+    });
+};
+
+/** Returns the permissions with the given username **/
+export const getUserPermissions = async (username: string): Promise<Permission[]> => {
+    const dbCategories = (await getDbResults(`SELECT * FROM permissions WHERE username=${toSqlValue(username)};`));
+    return dbCategories.map((dbCategory) => {
+        return {
+            username: dbCategory.username,
+            categoryID: dbCategory.category_id,
             permission: dbCategory.permission,
             encryptionKey: dbCategory.encryption_key,
         };

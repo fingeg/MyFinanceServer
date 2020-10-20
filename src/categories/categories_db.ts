@@ -1,5 +1,5 @@
 import {getDbResults, runDbCmd, toSqlValue, updateOnlyNonNullAttributes} from "../utils/database";
-import {Category, User} from "../utils/interfaces";
+import {Category} from "../utils/interfaces";
 
 /** Returns the category with the given id **/
 export const getCategory = async (id: number): Promise<Category | undefined> => {
@@ -10,8 +10,6 @@ export const getCategory = async (id: number): Promise<Category | undefined> => 
         name: dbCategory.name,
         description: dbCategory.description,
         isSplit: dbCategory.is_split,
-        payments: undefined,
-        splits: undefined
     };
 };
 

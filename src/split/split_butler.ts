@@ -6,15 +6,15 @@ import {getUser} from "../authentication/auth_db";
 import {getCategorySplits, rmvSplit, setSplit} from "./split_db";
 import {getPermission} from "../permissions/permissions_db";
 
-export const permissionRouter = express.Router();
-permissionRouter.use(bodyParser.json());
+export const splitRouter = express.Router();
+splitRouter.use(bodyParser.json());
 
 /**
  * Adds or updates a split
  *
  * The body has to contain a split object
  * */
-permissionRouter.post('/', async (req, res) => {
+splitRouter.post('/', async (req, res) => {
     const split: Split = req.body;
 
     // Check if the body is correct
@@ -57,7 +57,7 @@ permissionRouter.post('/', async (req, res) => {
  *
  * The body has to contain the username and the category id
  * */
-permissionRouter.delete('/', async (req, res) => {
+splitRouter.delete('/', async (req, res) => {
     const split: Split = req.body;
 
     // Check if the body is correct
