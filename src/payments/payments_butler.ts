@@ -17,7 +17,7 @@ paymentsRouter.post('/', async (req, res) => {
     const payment: Payment = req.body;
 
     // Check if the body is correct
-    if (!payment || !payment.categoryID || !payment.name || !payment.description || !payment.amount || !payment.date || !payment.payer || !payment.payed) {
+    if (!payment || !payment.categoryID || !payment.name || payment.description === undefined || !payment.amount || !payment.date || !payment.payer || payment.payed === undefined) {
         res.status(400);
         return res.json({status: false});
     }
@@ -36,9 +36,17 @@ paymentsRouter.post('/', async (req, res) => {
         return res.json({status: false, error: 'Write rights are required'});
     }
 
-    setPayment(payment);
+    if (payment.id) {
+        const currentPayment = await getPayment(payment.id);
+        if (!currentPayment || currentPayment.categoryID != category.id) {
+            res.status(409);
+            return res.json({status: false, error: 'Given id is invalid'});
+        }
+    }
 
-    return res.json({status: true});
+    const id = await setPayment(payment);
+
+    return res.json({status: true, id: id});
 });
 
 
