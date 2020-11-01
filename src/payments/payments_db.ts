@@ -1,4 +1,4 @@
-import {getDbResults, runDbCmd, toSqlValue, updateOnlyNonNullAttributes} from "../utils/database";
+import {fromSqlBoolean, getDbResults, runDbCmd, toSqlValue, updateOnlyNonNullAttributes} from "../utils/database";
 import {Payment} from "../utils/interfaces";
 
 /** Returns the payment with the given id **/
@@ -13,7 +13,7 @@ export const getPayment = async (id: number): Promise<Payment | undefined> => {
         payer: dbPayment.payer,
         date: dbPayment.date,
         categoryID: dbPayment.category_id,
-        payed: dbPayment.payed,
+        payed: fromSqlBoolean(dbPayment.payed) || false,
     };
 };
 
@@ -30,13 +30,13 @@ export const getCategoryPayments = async (categoryID: number): Promise<Payment[]
             payer: dbPayment.payer,
             date: dbPayment.date,
             categoryID: dbPayment.category_id,
-            payed: dbPayment.payed,
+            payed: fromSqlBoolean(dbPayment.payed) || false,
         };
     });
 };
 
 /** Updates or adds a new payment */
-export const setPayment = (payment: Payment) => {
+export const setPayment = async (payment: Payment): Promise<number> => {
     const updateAttr = {
         amount: payment.amount,
         name: payment.name,
@@ -46,7 +46,8 @@ export const setPayment = (payment: Payment) => {
         payed: payment.payed,
     };
     const updateStr = updateOnlyNonNullAttributes(updateAttr);
-    runDbCmd(`INSERT INTO payments VALUES (${toSqlValue(payment.id)}, ${toSqlValue(payment.categoryID)}, ${toSqlValue(payment.name)}, ${toSqlValue(payment.description)}, ${toSqlValue(payment.amount)}, ${toSqlValue(payment.date)}, ${toSqlValue(payment.payer)}, ${toSqlValue(payment.payed)}) ${updateStr};`);
+    const res: any = await getDbResults(`INSERT INTO payments VALUES (${toSqlValue(payment.id)}, ${toSqlValue(payment.categoryID)}, ${toSqlValue(payment.name)}, ${toSqlValue(payment.description)}, ${toSqlValue(payment.amount)}, ${toSqlValue(payment.date)}, ${toSqlValue(payment.payer)}, ${toSqlValue(payment.payed)}) ${updateStr};`);
+    return res.insertId;
 };
 
 /** Removes the payment with the given id */
