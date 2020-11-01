@@ -31,7 +31,7 @@ export const updateAllAttributes = (values: any, escape = false) => {
 };
 
 export const toSqlValue = (value: any, escape = false): string => {
-    if (value === undefined || value === null || value === 'undefined' || value === 'null') {
+    if (value == undefined || value === 'undefined' || value === 'null') {
         return `null`;
     }
     if (typeof value === 'boolean') {
@@ -44,14 +44,14 @@ export const toSqlValue = (value: any, escape = false): string => {
 };
 
 export const fromSqlBoolean = (value: number): boolean | undefined => {
-    if (value === undefined || value === null) {
+    if (value == undefined) {
         return undefined;
     }
     return value === 1;
 };
 
 export const fromSqlValue = <sqlType>(value: sqlType): sqlType | undefined => {
-    if (value === undefined || value === null) {
+    if (value == undefined) {
         return undefined;
     }
     return value;
@@ -134,7 +134,7 @@ const checkDatabaseStatus = (): boolean => {
     return true;
 };
 
-if (module.parent === null) {
+if (module.parent == null) {
     initDatabase().then(() => {
         createDefaultTables();
         dbConnection.end();

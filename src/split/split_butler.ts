@@ -18,7 +18,7 @@ splitRouter.post('/', async (req, res) => {
     const split: Split = req.body;
 
     // Check if the body is correct
-    if (!split || !split.categoryID || !split.username || !split.share || split.isPlatformUser === undefined) {
+    if (!split || split.categoryID == undefined || !split.username || !split.share || split.isPlatformUser == undefined) {
         res.status(400);
         return res.json({status: false});
     }
@@ -61,7 +61,7 @@ splitRouter.delete('/', async (req, res) => {
     const split: Split = req.body;
 
     // Check if the body is correct
-    if (!split.username || !split.categoryID) {
+    if (!split.username || split.categoryID == undefined) {
         res.status(400);
         return res.json({status: false});
     }

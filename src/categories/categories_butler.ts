@@ -77,7 +77,7 @@ categoryRouter.put('/', async (req, res) => {
 categoryRouter.get('/:id', async (req, res) => {
     const id = parseInt(req.params.id);
 
-    if (!id) {
+    if (id == undefined) {
         res.status(400);
         res.json({status: false});
     }
@@ -101,7 +101,7 @@ categoryRouter.delete('/', async (req, res) => {
     const category: Category = req.body;
 
     // Check if the body is correct
-    if (!category.id) {
+    if (category.id == undefined) {
         res.status(400);
         return res.json({status: false});
     }

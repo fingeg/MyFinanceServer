@@ -18,7 +18,7 @@ permissionRouter.post('/', async (req, res) => {
     const permission: Permission = req.body;
 
     // Check if the body is correct
-    if (!permission || !permission.categoryID || !permission.username || !permission.permission || !permission.encryptionKey) {
+    if (!permission || permission.categoryID == undefined || !permission.username || permission.permission == undefined || !permission.encryptionKey) {
         res.status(400);
         return res.json({status: false});
     }
@@ -70,7 +70,7 @@ permissionRouter.delete('/', async (req, res) => {
     const permission: Permission = req.body;
 
     // Check if the body is correct
-    if (!permission.username || !permission.categoryID) {
+    if (!permission.username || permission.categoryID == undefined) {
         res.status(400);
         return res.json({status: false});
     }

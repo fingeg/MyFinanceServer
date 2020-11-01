@@ -17,7 +17,7 @@ paymentsRouter.post('/', async (req, res) => {
     const payment: Payment = req.body;
 
     // Check if the body is correct
-    if (!payment || !payment.categoryID || !payment.name || payment.description === undefined || !payment.amount || !payment.date || !payment.payer || payment.payed === undefined) {
+    if (!payment || payment.categoryID == undefined || !payment.name || payment.description == undefined || payment.amount == undefined || !payment.date || !payment.payer || payment.payed == undefined) {
         res.status(400);
         return res.json({status: false});
     }
@@ -59,7 +59,7 @@ paymentsRouter.delete('/', async (req, res) => {
     const paymentID = req.body.id;
 
     // Check if the body is correct
-    if (!paymentID) {
+    if (paymentID == undefined) {
         res.status(400);
         return res.json({status: false});
     }

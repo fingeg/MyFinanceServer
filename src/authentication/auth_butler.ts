@@ -1,10 +1,9 @@
-
 // Extend the default request
 import express, {Request} from "express";
 import {getLogin, getUser, rmvLogin, rmvUser, rmvUserLogins, setLogin, setUser} from "./auth_db";
 import {User} from "../utils/interfaces";
 import bodyParser from "body-parser";
-import {generateEphemeral, deriveSession} from 'secure-remote-password/server';
+import {deriveSession, generateEphemeral} from 'secure-remote-password/server';
 import {rmvUserPermissions} from "../permissions/permissions_db";
 
 declare global {
@@ -128,7 +127,7 @@ userRouter.post('/login', async (req, res) => {
     const username: string = req.body.username;
 
     // If this is the first of two requests
-    if (!loginID) {
+    if (loginID == undefined) {
         const clientEphemeral: string = req.body.ephemeral;
 
         // Check if the parameters are set
@@ -199,7 +198,7 @@ userRouter.post('/login', async (req, res) => {
             console.log(`Login failed: ${e}`)
 
             // Delete failed login attempt from the database
-            if (!loginSession.sessionProof && loginSession.id) {
+            if (!loginSession.sessionProof && loginSession.id != undefined) {
                 rmvLogin(loginSession.id);
             }
 
