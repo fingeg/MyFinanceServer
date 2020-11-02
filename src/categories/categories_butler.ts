@@ -1,9 +1,10 @@
 import express from "express";
 import bodyParser from "body-parser";
-import {Category} from "../utils/interfaces";
+import {Category, Split} from "../utils/interfaces";
 import {addCategory, getCategory, rmvCategory, updateCategory} from "./categories_db";
 import {getPermission, rmvCategoryPermissions, setPermission} from "../permissions/permissions_db";
 import {rmvCategoryPayments} from "../payments/payments_db";
+import {rmvCategorySplits, setSplit} from "../split/split_db";
 
 export const categoryRouter = express.Router();
 categoryRouter.use(bodyParser.json());
@@ -17,46 +18,36 @@ categoryRouter.post('/', async (req, res) => {
     const category: Category = req.body;
 
     // Check if the body is correct
-    if (!category || !category.name || !category.description || category.isSplit == undefined || !req.body.encryptionKey) {
+    if (!category || !category.name || category.description == undefined || category.isSplit == undefined || (category.id == undefined && !req.body.encryptionKey)) {
         res.status(400);
         return res.json({status: false});
     }
 
-    const id = await addCategory(category);
-
-    // Add the logged in user as category owner
-    setPermission({
-        username: req.user.username,
-        categoryID: id,
-        permission: 2,
-        encryptionKey: req.body.encryptionKey,
-    });
-
-    return res.json({status: true, categoryID: id});
-});
-
-/**
- * Updates a category
- *
- * The body has to contain the category object (Defined in utils/interfaces.ts)
- * */
-categoryRouter.put('/', async (req, res) => {
-    const category: Category = req.body;
-
-    // Check if the body is correct
-    if (!category || !category.id || !category.name || !category.description || category.isSplit == undefined) {
-        res.status(400);
-        return res.json({status: false});
+    // If there are any splits set, check if they have the right format
+    const splits: Split[] = req.body.splits;
+    if (category.isSplit && splits) {
+        for (const split of splits) {
+            if (!split.username || !split.share || split.isPlatformUser == undefined) {
+                res.status(400);
+                return res.json({status: false});
+            }
+        }
     }
 
-    // Check if the user is the owner
-    const permission = await getPermission(req.user.username, category.id);
-    if (!permission || permission.permission != 2) {
-        res.status(403) //403: Forbidden
-        return res.json({status: false, error: 'The user has to be the owner of the category'});
-    }
+    // Add or update the category
+    let id: number;
+    if (category.id == undefined) {
+        id = await addCategory(category);
+    } else {
+        // Check if the user is the owner
+        const permission = await getPermission(req.user.username, category.id);
+        if (!permission || permission.permission != 2) {
+            res.status(403) //403: Forbidden
+            return res.json({status: false, error: 'The user has to be the owner of the category'});
+        }
 
-    const id = await updateCategory(category);
+        id = await updateCategory(category);
+    }
 
     // Add the logged in user as category owner
     if (req.body.encryptionKey) {
@@ -68,8 +59,23 @@ categoryRouter.put('/', async (req, res) => {
         });
     }
 
+    // Add/Update splits
+    if (category.isSplit) {
+        // If this is a category update, remove all old splits
+        if (category.id != undefined) {
+            rmvCategorySplits(category.id);
+        }
+
+        // Set new splits
+        splits.forEach((split) => {
+            split.categoryID = category.id == undefined ? id : category.id;
+            setSplit(split);
+        });
+    }
+
     return res.json({status: true, categoryID: id});
 });
+
 
 /**
  * Returns a category
