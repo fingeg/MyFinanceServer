@@ -1,6 +1,7 @@
 import mysql from 'mysql';
 import config from './config';
 import sqlString from 'sqlstring';
+import * as _moment from 'moment';
 
 let dbConnection: mysql.Connection;
 
@@ -37,11 +38,32 @@ export const toSqlValue = (value: any, escape = false): string => {
     if (typeof value === 'boolean') {
         return `${value}`;
     }
+    if (typeof value == 'number') {
+        return value.toString();
+    }
     if (escape) {
         return escapeString(value);
     }
     return `'${value}'`;
 };
+
+export const toSqlDate = (date: string, withStringChars = true) => {
+    console.log('Original date: ' + date);
+    const parsed = _moment.utc(date).format('YYYY-MM-DDThh:mm:ss');
+    console.log('Parsed date: ' + parsed);
+
+    if (!withStringChars) {
+        return parsed;
+    }
+    return `'${parsed}'`;
+}
+
+export const fromSqlDate = (date: string) => {
+    console.log('Sql date: ' + date);
+    const parsed = _moment.utc(date).toISOString();
+    console.log('Parsed date: ' + parsed);
+    return parsed;
+}
 
 export const fromSqlBoolean = (value: number): boolean | undefined => {
     if (value == undefined) {
@@ -112,17 +134,17 @@ export const getDbResults = async (options: string): Promise<any[]> => {
 const createDefaultTables = (): void => {
     if (!checkDatabaseStatus()) return;
     dbConnection.query(
-        'CREATE TABLE IF NOT EXISTS users (username VARCHAR(10) NOT NULL, salt VARCHAR(64) NOT NULL, verifier VARCHAR(512) NOT NULL, public_key VARCHAR(360) NOT NULL, private_key VARCHAR(3872) NOT NULL, UNIQUE KEY unique_username (username)) ENGINE = InnoDB DEFAULT CHARSET=utf8;');
+        'CREATE TABLE IF NOT EXISTS users (username VARCHAR(10) NOT NULL, salt VARCHAR(64) NOT NULL, verifier VARCHAR(512) NOT NULL, public_key VARCHAR(360) NOT NULL, private_key VARCHAR(3872) NOT NULL, registered BIGINT NOT NULL, UNIQUE KEY unique_username (username)) ENGINE = InnoDB DEFAULT CHARSET=utf8;');
     dbConnection.query(
         'CREATE TABLE IF NOT EXISTS logins (username VARCHAR(10) NOT NULL, id int NOT NULL AUTO_INCREMENT, server_ephemeral VARCHAR(64) NOT NULL, client_ephemeral VARCHAR(512) NOT NULL, session_proof VARCHAR(64), UNIQUE KEY unique_id (id)) ENGINE = InnoDB DEFAULT CHARSET=utf8;');
     dbConnection.query(
-        'CREATE TABLE IF NOT EXISTS categories (id int NOT NULL AUTO_INCREMENT, name TEXT NOT NULL, descirption TEXT NOT NULL, is_split BOOLEAN, UNIQUE KEY unique_id (id)) ENGINE = InnoDB DEFAULT CHARSET=utf8;');
+        'CREATE TABLE IF NOT EXISTS categories (id int NOT NULL AUTO_INCREMENT, name TEXT NOT NULL, description TEXT NOT NULL, is_split BOOLEAN, last_edited BIGINT NOT NULL, UNIQUE KEY unique_id (id)) ENGINE = InnoDB DEFAULT CHARSET=utf8;');
     dbConnection.query(
-        'CREATE TABLE IF NOT EXISTS permissions (category_id int NOT NULL, username VARCHAR(10) NOT NULL, permission INT NOT NULL, encryption_key VARCHAR(344), UNIQUE KEY unique_id (category_id, username)) ENGINE = InnoDB DEFAULT CHARSET=utf8;');
+        'CREATE TABLE IF NOT EXISTS permissions (category_id int NOT NULL, username VARCHAR(10) NOT NULL, permission INT NOT NULL, encryption_key VARCHAR(344), last_edited BIGINT NOT NULL, UNIQUE KEY unique_id (category_id, username)) ENGINE = InnoDB DEFAULT CHARSET=utf8;');
     dbConnection.query(
-        'CREATE TABLE IF NOT EXISTS payments (id int NOT NULL AUTO_INCREMENT, category_id int NOT NULL, name TEXT NOT NULL, description TEXT NOT NULL, amount TEXT NOT NULL, date DATE NOT NULL, payer TEXT NOT NULL, payed BOOL NOT NULL, UNIQUE KEY unique_id (id)) ENGINE = InnoDB DEFAULT CHARSET=utf8;');
+        'CREATE TABLE IF NOT EXISTS payments (id int NOT NULL AUTO_INCREMENT, category_id int NOT NULL, name TEXT NOT NULL, description TEXT NOT NULL, amount TEXT NOT NULL, date DATE NOT NULL, payer TEXT NOT NULL, payed BOOL NOT NULL, last_edited BIGINT NOT NULL, UNIQUE KEY unique_id (id)) ENGINE = InnoDB DEFAULT CHARSET=utf8;');
     dbConnection.query(
-        'CREATE TABLE IF NOT EXISTS splits (category_id int NOT NULL, username VARCHAR(20) NOT NULL, share float NOT NULL, is_platform_user BOOL NOT NULL, UNIQUE KEY unique_id (category_id, username)) ENGINE = InnoDB DEFAULT CHARSET=utf8;');
+        'CREATE TABLE IF NOT EXISTS splits (category_id int NOT NULL, username VARCHAR(20) NOT NULL, share float NOT NULL, is_platform_user BOOL NOT NULL, last_edited BIGINT NOT NULL, UNIQUE KEY unique_id (category_id, username)) ENGINE = InnoDB DEFAULT CHARSET=utf8;');
 };
 
 /** Checks if the database connection is already initialized */

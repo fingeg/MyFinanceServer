@@ -1,7 +1,7 @@
 import express from "express";
 import bodyParser from "body-parser";
 import {Payment} from "../utils/interfaces";
-import {getCategory} from "../categories/categories_db";
+import {getCategory, updateCategoryTimestamp} from "../categories/categories_db";
 import {getPermission} from "../permissions/permissions_db";
 import {getPayment, rmvPayment, setPayment} from "./payments_db";
 
@@ -44,6 +44,10 @@ paymentsRouter.post('/', async (req, res) => {
         }
     }
 
+    // Update the category timestamp
+    updateCategoryTimestamp(category.id);
+
+    // Store the payment in the database
     const id = await setPayment(payment);
 
     return res.json({status: true, id: id});
@@ -79,6 +83,7 @@ paymentsRouter.delete('/', async (req, res) => {
     }
 
     rmvPayment(paymentID);
+    updateCategoryTimestamp(payment.categoryID);
 
     return res.json({status: true});
 });

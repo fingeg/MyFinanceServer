@@ -1,7 +1,7 @@
 import express from "express";
 import bodyParser from "body-parser";
 import {Permission} from "../utils/interfaces";
-import {getCategory, rmvCategory} from "../categories/categories_db";
+import {getCategory, rmvCategory, updateCategoryTimestamp} from "../categories/categories_db";
 import {getCategoryPermissions, getPermission, rmvPermission, setPermission} from "./permissions_db";
 import {getUser} from "../authentication/auth_db";
 import {rmvCategoryPayments} from "../payments/payments_db";
@@ -57,6 +57,9 @@ permissionRouter.post('/', async (req, res) => {
 
     setPermission(permission);
 
+    // Update category timestamp
+    updateCategoryTimestamp(category.id)
+
     return res.json({status: true});
 });
 
@@ -92,6 +95,7 @@ permissionRouter.delete('/', async (req, res) => {
     }
 
     rmvPermission(permission.username, permission.categoryID);
+    updateCategoryTimestamp(permission.categoryID);
 
     return res.json({status: true});
 });

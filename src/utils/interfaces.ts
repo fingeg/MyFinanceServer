@@ -10,6 +10,9 @@ export interface User {
     /** Only for de- and encryption */
     privateKey: string; // Encrypted version (Only the client can decrypt it)
     publicKey: string; // Unencrypted version (Everyone can use it to encrypt category keys)
+
+    /** UTC-Timestamp */
+    registered: number;
 }
 
 /** One finance category **/
@@ -18,6 +21,8 @@ export interface Category {
     name: string;
     description: string;
     isSplit: boolean;
+    /** UTC-Timestamp */
+    lastEdited: number;
 }
 
 export interface CategoryOverview {
@@ -29,6 +34,8 @@ export interface CategoryOverview {
     splits: Split[] | undefined;
     permission: number | undefined;
     encryptionKey: string;
+    /** UTC-Timestamp */
+    lastEdited: number;
 }
 
 /** A permission specific for one user and category */
@@ -43,6 +50,8 @@ export interface Permission {
     permission: number;
     /** The base64 encoded and with the users public key encrypted category key to de- and encrypt the category data */
     encryptionKey: string;
+    /** UTC-Timestamp */
+    lastEdited: number | undefined;
 }
 
 export interface Payment {
@@ -56,6 +65,8 @@ export interface Payment {
     payer: string;
     categoryID: number;
     payed: boolean;
+    /** UTC-Timestamp */
+    lastEdited: number | undefined;
 }
 
 export interface Split {
@@ -68,6 +79,9 @@ export interface Split {
 
     /** Only for the database, not in request */
     categoryID: number | undefined;
+
+    /** UTC-Timestamp */
+    lastEdited: number;
 }
 
 export interface Login {

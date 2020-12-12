@@ -39,6 +39,7 @@ userRouter.put('/', async (req, res) => {
         verifier: req.body.verifier,
         privateKey: req.body.privateKey,
         publicKey: req.body.publicKey,
+        registered: Date.now(),
     };
 
     // Check if the parameters are set
@@ -74,6 +75,7 @@ userRouter.post('/', async (req, res) => {
             verifier: req.body.verifier,
             privateKey: req.user.privateKey,
             publicKey: req.user.publicKey,
+            registered: Date.now(),
         };
 
         // Check if the parameters are set

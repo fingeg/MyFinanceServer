@@ -46,7 +46,8 @@ categoryRouter.post('/', async (req, res) => {
             return res.json({status: false, error: 'The user has to be the owner of the category'});
         }
 
-        id = await updateCategory(category);
+        id = category.id;
+        await updateCategory(category);
     }
 
     // Add the logged in user as category owner
@@ -56,6 +57,7 @@ categoryRouter.post('/', async (req, res) => {
             categoryID: id,
             permission: 2,
             encryptionKey: req.body.encryptionKey,
+            lastEdited: undefined,
         });
     }
 

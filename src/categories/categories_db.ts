@@ -1,4 +1,4 @@
-import {getDbResults, runDbCmd, toSqlValue, updateOnlyNonNullAttributes} from "../utils/database";
+import {fromSqlBoolean, getDbResults, runDbCmd, toSqlValue, updateOnlyNonNullAttributes} from "../utils/database";
 import {Category} from "../utils/interfaces";
 
 /** Returns the category with the given id **/
@@ -9,26 +9,36 @@ export const getCategory = async (id: number): Promise<Category | undefined> => 
         id: dbCategory.id,
         name: dbCategory.name,
         description: dbCategory.description,
-        isSplit: dbCategory.is_split,
+        isSplit: fromSqlBoolean(dbCategory.is_split) || false,
+        lastEdited: dbCategory.last_edited,
     };
 };
 
 /** Updates or adds a new category */
 export const addCategory = async (category: Category): Promise<number> => {
-    const result: any = await getDbResults(`INSERT INTO categories VALUES (NULL, ${toSqlValue(category.name)}, ${toSqlValue(category.description)}, ${category.isSplit});`);
+    const result: any = await getDbResults(`INSERT INTO categories VALUES (NULL, ${toSqlValue(category.name)}, ${toSqlValue(category.description)}, ${category.isSplit}, ${Date.now()});`);
     return result.insertId;
 };
 
 /** Updates or adds a new category */
-export const updateCategory = async (category: Category): Promise<number> => {
+export const updateCategory = async (category: Category): Promise<number | undefined> => {
     const updateAttr = {
         name: category.name,
         description: category.description,
         is_split: category.isSplit,
+        last_edited: Date.now(),
     };
     const updateStr = updateOnlyNonNullAttributes(updateAttr);
-    const result: any = await getDbResults(`INSERT INTO categories VALUES (${toSqlValue(category.id)}, ${toSqlValue(category.name)}, ${toSqlValue(category.description)}, ${category.isSplit}) ${updateStr};`);
-    return result.insertId;
+    const result: any = await getDbResults(`INSERT INTO categories VALUES (${toSqlValue(category.id)}, ${toSqlValue(category.name)}, ${toSqlValue(category.description)}, ${category.isSplit}, ${Date.now()}) ${updateStr};`);
+    if (result) {
+        return result.insertId;
+    }
+    return undefined;
+};
+
+/** Updates the last edited of a category */
+export const updateCategoryTimestamp = (categoryID: number) => {
+    runDbCmd(`UPDATE categories SET last_edited = ${Date.now()} WHERE id = ${categoryID};`);
 };
 
 /** Removes the category with the given id

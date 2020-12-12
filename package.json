@@ -19,6 +19,7 @@
     "body-parser": "^1.19.0",
     "cors": "^2.8.5",
     "express": "^4.17.1",
+    "moment": "^2.29.1",
     "mysql": "^2.17.1",
     "secure-remote-password": "^0.3.1",
     "sqlstring": "^2.3.1"
@@ -26,6 +27,7 @@
   "devDependencies": {
     "@types/cors": "^2.8.6",
     "@types/express": "^4.17.1",
+    "@types/moment": "^2.13.0",
     "@types/mysql": "^2.15.8",
     "@types/sqlstring": "^2.2.1",
     "ts-node": "^8.4.1",

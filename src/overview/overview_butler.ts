@@ -22,8 +22,9 @@ overviewRouter.get('/', async (req, res) => {
             continue;
         }
 
-        // Get all category payments
-        const payments = await getCategoryPayments(category.id);
+        // Get all category payments sorted by last edit
+        const payments = (await getCategoryPayments(category.id))
+            .sort((p1, p2) => (p2.lastEdited || 0) - (p1.lastEdited || 0))
 
         // Get the category splits
         let splits: Split[] | undefined;
@@ -40,8 +41,9 @@ overviewRouter.get('/', async (req, res) => {
             payments: payments,
             splits: splits,
             encryptionKey: permission.encryptionKey,
+            lastEdited: category.lastEdited,
         });
     }
-
-    res.json({status: true, categories: categories});
+    const sortedCategories = categories.sort((c1, c2) => (c2.lastEdited || 0) - (c1.lastEdited || 0))
+    res.json({status: true, categories: sortedCategories});
 });

@@ -10,6 +10,7 @@ export const getPermission = async (username: string, categoryID: number): Promi
         categoryID: categoryID,
         permission: dbCategory.permission,
         encryptionKey: dbCategory.encryption_key,
+        lastEdited: dbCategory.last_edited,
     };
 };
 
@@ -22,6 +23,7 @@ export const getCategoryPermissions = async (categoryID: number): Promise<Permis
             categoryID: categoryID,
             permission: dbCategory.permission,
             encryptionKey: dbCategory.encryption_key,
+            lastEdited: dbCategory.last_edited,
         };
     });
 };
@@ -35,6 +37,7 @@ export const getUserPermissions = async (username: string): Promise<Permission[]
             categoryID: dbCategory.category_id,
             permission: dbCategory.permission,
             encryptionKey: dbCategory.encryption_key,
+            lastEdited: dbCategory.last_edited,
         };
     });
 };
@@ -44,9 +47,10 @@ export const setPermission = (permission: Permission) => {
     const updateAttr = {
         permission: permission.permission,
         encryption_key: permission.encryptionKey,
+        last_edited: Date.now(),
     };
     const updateStr = updateOnlyNonNullAttributes(updateAttr);
-    runDbCmd(`INSERT INTO permissions VALUES (${toSqlValue(permission.categoryID)}, ${toSqlValue(permission.username)}, ${toSqlValue(permission.permission)}, ${toSqlValue(permission.encryptionKey)}) ${updateStr};`);
+    runDbCmd(`INSERT INTO permissions VALUES (${toSqlValue(permission.categoryID)}, ${toSqlValue(permission.username)}, ${toSqlValue(permission.permission)}, ${toSqlValue(permission.encryptionKey)}, ${Date.now()}) ${updateStr};`);
 };
 
 /** Removes the permission with the given username */

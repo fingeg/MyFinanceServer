@@ -14,6 +14,7 @@ export const getPayment = async (id: number): Promise<Payment | undefined> => {
         date: dbPayment.date,
         categoryID: dbPayment.category_id,
         payed: fromSqlBoolean(dbPayment.payed) || false,
+        lastEdited: dbPayment.last_edited,
     };
 };
 
@@ -31,6 +32,7 @@ export const getCategoryPayments = async (categoryID: number): Promise<Payment[]
             date: dbPayment.date,
             categoryID: dbPayment.category_id,
             payed: fromSqlBoolean(dbPayment.payed) || false,
+            lastEdited: dbPayment.last_edited,
         };
     });
 };
@@ -44,9 +46,10 @@ export const setPayment = async (payment: Payment): Promise<number> => {
         date: payment.date,
         payer: payment.payer,
         payed: payment.payed,
+        last_edited: Date.now(),
     };
     const updateStr = updateOnlyNonNullAttributes(updateAttr);
-    const res: any = await getDbResults(`INSERT INTO payments VALUES (${toSqlValue(payment.id)}, ${toSqlValue(payment.categoryID)}, ${toSqlValue(payment.name)}, ${toSqlValue(payment.description)}, ${toSqlValue(payment.amount)}, ${toSqlValue(payment.date)}, ${toSqlValue(payment.payer)}, ${toSqlValue(payment.payed)}) ${updateStr};`);
+    const res: any = await getDbResults(`INSERT INTO payments VALUES (${toSqlValue(payment.id)}, ${toSqlValue(payment.categoryID)}, ${toSqlValue(payment.name)}, ${toSqlValue(payment.description)}, ${toSqlValue(payment.amount)}, ${toSqlValue(payment.date)}, ${toSqlValue(payment.payer)}, ${toSqlValue(payment.payed)}, ${Date.now()}) ${updateStr};`);
     return res.insertId;
 };
 

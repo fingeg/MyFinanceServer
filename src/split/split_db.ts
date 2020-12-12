@@ -10,6 +10,7 @@ export const getSplit = async (username: string, categoryID: number): Promise<Sp
         categoryID: categoryID,
         share: dbSplit.share,
         isPlatformUser: fromSqlBoolean(dbSplit.is_platform_user) || false,
+        lastEdited: dbSplit.last_edited,
     };
 };
 
@@ -22,6 +23,7 @@ export const getCategorySplits = async (categoryID: number): Promise<Split[]> =>
             categoryID: categoryID,
             share: dbSplit.share,
             isPlatformUser: fromSqlBoolean(dbSplit.is_platform_user) || false,
+            lastEdited: dbSplit.last_edited,
         };
     });
 };
@@ -31,9 +33,10 @@ export const setSplit = (split: Split) => {
     const updateAttr = {
         is_platform_user: split.isPlatformUser,
         share: split.share,
+        last_edited: Date.now(),
     };
     const updateStr = updateOnlyNonNullAttributes(updateAttr);
-    runDbCmd(`INSERT INTO splits VALUES (${toSqlValue(split.categoryID)}, ${toSqlValue(split.username)}, ${toSqlValue(split.share)}, ${toSqlValue(split.isPlatformUser)}) ${updateStr};`);
+    runDbCmd(`INSERT INTO splits VALUES (${toSqlValue(split.categoryID)}, ${toSqlValue(split.username)}, ${toSqlValue(split.share)}, ${toSqlValue(split.isPlatformUser)}, ${Date.now()}) ${updateStr};`);
 };
 
 /** Removes the permission with the given username */

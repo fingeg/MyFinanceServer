@@ -1,7 +1,7 @@
 import express from "express";
 import bodyParser from "body-parser";
 import {Split} from "../utils/interfaces";
-import {getCategory, updateCategory} from "../categories/categories_db";
+import {getCategory, updateCategory, updateCategoryTimestamp} from "../categories/categories_db";
 import {getUser} from "../authentication/auth_db";
 import {getCategorySplits, rmvSplit, setSplit} from "./split_db";
 import {getPermission} from "../permissions/permissions_db";
@@ -48,6 +48,9 @@ splitRouter.post('/', async (req, res) => {
 
     setSplit(split);
 
+    // Update category timestamp
+    updateCategoryTimestamp(category.id);
+
     return res.json({status: true});
 });
 
@@ -89,6 +92,7 @@ splitRouter.delete('/', async (req, res) => {
     }
 
     rmvSplit(split.username, split.categoryID);
+    updateCategoryTimestamp(split.categoryID);
 
     return res.json({status: true});
 });
