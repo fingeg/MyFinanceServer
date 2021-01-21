@@ -1,7 +1,6 @@
 import mysql from 'mysql';
 import config from './config';
 import sqlString from 'sqlstring';
-import * as _moment from 'moment';
 
 let dbConnection: mysql.Connection;
 
@@ -46,24 +45,6 @@ export const toSqlValue = (value: any, escape = false): string => {
     }
     return `'${value}'`;
 };
-
-export const toSqlDate = (date: string, withStringChars = true) => {
-    console.log('Original date: ' + date);
-    const parsed = _moment.utc(date).format('YYYY-MM-DDThh:mm:ss');
-    console.log('Parsed date: ' + parsed);
-
-    if (!withStringChars) {
-        return parsed;
-    }
-    return `'${parsed}'`;
-}
-
-export const fromSqlDate = (date: string) => {
-    console.log('Sql date: ' + date);
-    const parsed = _moment.utc(date).toISOString();
-    console.log('Parsed date: ' + parsed);
-    return parsed;
-}
 
 export const fromSqlBoolean = (value: number): boolean | undefined => {
     if (value == undefined) {
@@ -142,7 +123,7 @@ const createDefaultTables = (): void => {
     dbConnection.query(
         'CREATE TABLE IF NOT EXISTS permissions (category_id int NOT NULL, username VARCHAR(10) NOT NULL, permission INT NOT NULL, encryption_key VARCHAR(344), last_edited BIGINT NOT NULL, UNIQUE KEY unique_id (category_id, username)) ENGINE = InnoDB DEFAULT CHARSET=utf8;');
     dbConnection.query(
-        'CREATE TABLE IF NOT EXISTS payments (id int NOT NULL AUTO_INCREMENT, category_id int NOT NULL, name TEXT NOT NULL, description TEXT NOT NULL, amount TEXT NOT NULL, date DATE NOT NULL, payer TEXT NOT NULL, payed BOOL NOT NULL, last_edited BIGINT NOT NULL, UNIQUE KEY unique_id (id)) ENGINE = InnoDB DEFAULT CHARSET=utf8;');
+        'CREATE TABLE IF NOT EXISTS payments (id int NOT NULL AUTO_INCREMENT, category_id int NOT NULL, name TEXT NOT NULL, description TEXT NOT NULL, amount TEXT NOT NULL, date VARCHAR(10) NOT NULL, payer TEXT NOT NULL, payed BOOL NOT NULL, last_edited BIGINT NOT NULL, UNIQUE KEY unique_id (id)) ENGINE = InnoDB DEFAULT CHARSET=utf8;');
     dbConnection.query(
         'CREATE TABLE IF NOT EXISTS splits (category_id int NOT NULL, username VARCHAR(20) NOT NULL, share float NOT NULL, is_platform_user BOOL NOT NULL, last_edited BIGINT NOT NULL, UNIQUE KEY unique_id (category_id, username)) ENGINE = InnoDB DEFAULT CHARSET=utf8;');
 };

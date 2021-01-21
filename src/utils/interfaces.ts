@@ -59,7 +59,7 @@ export interface Payment {
     id: number;
     description: string;
     amount: number;
-    /** The payment date in ISO format */
+    /** The payment date as YYYY-MM-DD */
     date: string;
     /** The username of the one who payed the price */
     payer: string;
