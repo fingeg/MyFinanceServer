@@ -1,4 +1,4 @@
-import {getDbResults, runDbCmd, toSqlValue, updateOnlyNonNullAttributes} from "../utils/database";
+import {getDbResults, runDbCmd, toSqlValue, unescapeString, updateOnlyNonNullAttributes} from "../utils/database";
 import {Login, User} from "../utils/interfaces";
 
 /** Returns the user with the given username **/
@@ -6,7 +6,7 @@ export const getUser = async (username: string): Promise<User | undefined> => {
     const dbUser = (await getDbResults(`SELECT * FROM users WHERE username=${toSqlValue(username)};`))[0];
     if (!dbUser) return undefined;
     return {
-        username: username,
+        username: unescapeString(username),
         salt: dbUser.salt,
         verifier: dbUser.verifier,
         publicKey: dbUser.public_key,
@@ -35,7 +35,7 @@ export const getLogin = async (id: number): Promise<Login | undefined> => {
     const dbLogin = (await getDbResults(`SELECT * FROM logins WHERE id=${toSqlValue(id)};`))[0];
     if (!dbLogin) return undefined;
     return {
-        username: dbLogin.username,
+        username: unescapeString(dbLogin.username),
         id: id,
         serverEphemeral: dbLogin.server_ephemeral,
         clientEphemeral: dbLogin.client_ephemeral,

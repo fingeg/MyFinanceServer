@@ -1,4 +1,11 @@
-import {fromSqlBoolean, getDbResults, runDbCmd, toSqlValue, updateOnlyNonNullAttributes} from "../utils/database";
+import {
+    fromSqlBoolean,
+    getDbResults,
+    runDbCmd,
+    toSqlValue,
+    unescapeString,
+    updateOnlyNonNullAttributes
+} from "../utils/database";
 import {Payment} from "../utils/interfaces";
 
 /** Returns the payment with the given id **/
@@ -7,10 +14,10 @@ export const getPayment = async (id: number): Promise<Payment | undefined> => {
     if (!dbPayment) return undefined;
     return {
         id: id,
-        name: dbPayment.name,
-        description: dbPayment.description,
+        name: unescapeString(dbPayment.name),
+        description: unescapeString(dbPayment.description),
         amount: dbPayment.amount,
-        payer: dbPayment.payer,
+        payer: unescapeString(dbPayment.payer),
         date: dbPayment.date,
         categoryID: dbPayment.category_id,
         payed: fromSqlBoolean(dbPayment.payed) || false,
@@ -25,10 +32,10 @@ export const getCategoryPayments = async (categoryID: number): Promise<Payment[]
     return dbPayments.map((dbPayment) => {
         return {
             id: dbPayment.id,
-            name: dbPayment.name,
-            description: dbPayment.description,
+            name: unescapeString(dbPayment.name),
+            description: unescapeString(dbPayment.description),
             amount: dbPayment.amount,
-            payer: dbPayment.payer,
+            payer: unescapeString(dbPayment.payer),
             date: dbPayment.date,
             categoryID: dbPayment.category_id,
             payed: fromSqlBoolean(dbPayment.payed) || false,

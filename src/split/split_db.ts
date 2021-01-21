@@ -1,4 +1,11 @@
-import {fromSqlBoolean, getDbResults, runDbCmd, toSqlValue, updateOnlyNonNullAttributes} from "../utils/database";
+import {
+    fromSqlBoolean,
+    getDbResults,
+    runDbCmd,
+    toSqlValue,
+    unescapeString,
+    updateOnlyNonNullAttributes
+} from "../utils/database";
 import {Split} from "../utils/interfaces";
 
 /** Returns the permission with the given username and category id **/
@@ -19,7 +26,7 @@ export const getCategorySplits = async (categoryID: number): Promise<Split[]> =>
     const dbSplits = (await getDbResults(`SELECT * FROM splits WHERE category_id=${categoryID};`));
     return dbSplits.map((dbSplit) => {
         return {
-            username: dbSplit.username,
+            username: unescapeString(dbSplit.username),
             categoryID: categoryID,
             share: dbSplit.share,
             isPlatformUser: fromSqlBoolean(dbSplit.is_platform_user) || false,

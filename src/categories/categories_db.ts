@@ -1,4 +1,11 @@
-import {fromSqlBoolean, getDbResults, runDbCmd, toSqlValue, updateOnlyNonNullAttributes} from "../utils/database";
+import {
+    fromSqlBoolean,
+    getDbResults,
+    runDbCmd,
+    toSqlValue,
+    unescapeString,
+    updateOnlyNonNullAttributes
+} from "../utils/database";
 import {Category} from "../utils/interfaces";
 
 /** Returns the category with the given id **/
@@ -7,8 +14,8 @@ export const getCategory = async (id: number): Promise<Category | undefined> => 
     if (!dbCategory) return undefined;
     return {
         id: dbCategory.id,
-        name: dbCategory.name,
-        description: dbCategory.description,
+        name: unescapeString(dbCategory.name),
+        description: unescapeString(dbCategory.description),
         isSplit: fromSqlBoolean(dbCategory.is_split) || false,
         lastEdited: dbCategory.last_edited,
     };

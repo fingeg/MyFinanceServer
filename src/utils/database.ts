@@ -8,11 +8,11 @@ export const escapeString = (text: string) => {
     return sqlString.escape(text);
 };
 
-export const unescapeString = (sql: string) => {
-    return sqlString.raw(sql);
+export const unescapeString = (sql: string): string => {
+    return sqlString.raw(sql).toSqlString();
 };
 
-export const updateOnlyNonNullAttributes = (values: any, escape = false) => {
+export const updateOnlyNonNullAttributes = (values: any, escape = true) => {
     const filtered = Object.keys(values).filter((key) => values[key] != undefined);
     if (filtered.length === 0) return '';
 
@@ -21,16 +21,7 @@ export const updateOnlyNonNullAttributes = (values: any, escape = false) => {
     }).join(', ');
 };
 
-export const updateAllAttributes = (values: any, escape = false) => {
-    if (Object.keys(values).length === 0) {
-        return '';
-    }
-    return 'ON DUPLICATE KEY UPDATE ' + Object.keys(values).map((key) => {
-        return `${key} = ${toSqlValue(values[key], escape)}`;
-    }).join(', ');
-};
-
-export const toSqlValue = (value: any, escape = false): string => {
+export const toSqlValue = (value: any, escape = true): string => {
     if (value == undefined || value === 'undefined' || value === 'null') {
         return `null`;
     }
