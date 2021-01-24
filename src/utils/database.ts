@@ -108,7 +108,7 @@ const createDefaultTables = (): void => {
     dbConnection.query(
         'CREATE TABLE IF NOT EXISTS users (username VARCHAR(10) NOT NULL, salt VARCHAR(64) NOT NULL, verifier VARCHAR(512) NOT NULL, public_key VARCHAR(360) NOT NULL, private_key VARCHAR(3872) NOT NULL, registered BIGINT NOT NULL, UNIQUE KEY unique_username (username)) ENGINE = InnoDB DEFAULT CHARSET=utf8;');
     dbConnection.query(
-        'CREATE TABLE IF NOT EXISTS logins (username VARCHAR(10) NOT NULL, id int NOT NULL AUTO_INCREMENT, server_ephemeral VARCHAR(64) NOT NULL, client_ephemeral VARCHAR(512) NOT NULL, session_proof VARCHAR(64), UNIQUE KEY unique_id (id)) ENGINE = InnoDB DEFAULT CHARSET=utf8;');
+        'CREATE TABLE IF NOT EXISTS logins (username VARCHAR(10) NOT NULL, id int NOT NULL AUTO_INCREMENT, server_ephemeral VARCHAR(64) NOT NULL, client_ephemeral VARCHAR(512) NOT NULL, session_proof VARCHAR(64), last_edited BIGINT NOT NULL, UNIQUE KEY unique_id (id)) ENGINE = InnoDB DEFAULT CHARSET=utf8;');
     dbConnection.query(
         'CREATE TABLE IF NOT EXISTS categories (id int NOT NULL AUTO_INCREMENT, name TEXT NOT NULL, description TEXT NOT NULL, is_split BOOLEAN, last_edited BIGINT NOT NULL, UNIQUE KEY unique_id (id)) ENGINE = InnoDB DEFAULT CHARSET=utf8;');
     dbConnection.query(

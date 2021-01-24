@@ -40,6 +40,7 @@ export const getLogin = async (id: number): Promise<Login | undefined> => {
         serverEphemeral: dbLogin.server_ephemeral,
         clientEphemeral: dbLogin.client_ephemeral,
         sessionProof: dbLogin.session_proof,
+        lastEdited: dbLogin.last_edited,
     };
 };
 
@@ -49,11 +50,18 @@ export const setLogin = async (login: Login): Promise<number> => {
         server_ephemeral: login.serverEphemeral,
         client_ephemeral: login.clientEphemeral,
         session_proof: login.sessionProof,
+        last_edited: Date.now(),
     };
     const updateStr = updateOnlyNonNullAttributes(updateAttr);
-    const result: any = await getDbResults(`INSERT INTO logins VALUES (${toSqlValue(login.username)}, ${toSqlValue(login.id)}, ${toSqlValue(login.serverEphemeral)}, ${toSqlValue(login.clientEphemeral)}, ${toSqlValue(login.sessionProof)}) ${updateStr};`);
+    const result: any = await getDbResults(`INSERT INTO logins VALUES (${toSqlValue(login.username)}, ${toSqlValue(login.id)}, ${toSqlValue(login.serverEphemeral)}, ${toSqlValue(login.clientEphemeral)}, ${toSqlValue(login.sessionProof)}, ${Date.now()}) ${updateStr};`);
     return result.insertId;
 };
+
+export const rmvExpiredLogins = (): void => {
+    // current timestamp minus two hours (1000ms * 60sec * 60min * 2h)
+    const oldestDate = Date.now() - 7200000;
+    runDbCmd(`DELETE FROM logins WHERE last_edited < ${oldestDate};`);
+}
 
 /** Removes a login session */
 export const rmvLogin = (id: number): void => {

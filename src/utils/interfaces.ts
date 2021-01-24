@@ -90,4 +90,5 @@ export interface Login {
     serverEphemeral: string;
     clientEphemeral: string;
     sessionProof: string | undefined;
+    lastEdited: number | undefined;
 }

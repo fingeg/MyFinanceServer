@@ -153,6 +153,7 @@ userRouter.post('/login', async (req, res) => {
             serverEphemeral: serverEphemeral.secret,
             clientEphemeral: clientEphemeral,
             sessionProof: undefined,
+            lastEdited: undefined,
         });
 
         return res.json({status: true, loginID: id, serverEphemeral: serverEphemeral.public, salt: user.salt});
