@@ -60,6 +60,10 @@ export const setPayment = async (payment: Payment): Promise<number> => {
     return res.insertId;
 };
 
+export const markCategoryPaymentsAsPayed = (categoryID: number): void => {
+    runDbCmd(`UPDATE payments SET payed=TRUE, last_edited=${Date.now()} WHERE category_id=${categoryID};`);
+}
+
 /** Removes the payment with the given id */
 export const rmvPayment = (id: number): void => {
     runDbCmd(`DELETE FROM payments WHERE id=${toSqlValue(id)};`);
